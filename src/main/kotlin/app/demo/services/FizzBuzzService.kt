@@ -1,37 +1,24 @@
 package app.demo.services
 
-interface Rule {
-    fun matches(n: Int) : Boolean
-    fun process(n: Int) : String
-}
+import app.demo.domain.*
+import org.springframework.stereotype.Component
 
-open class DivisibleRule (private val divisor: Int, private val message: String) : Rule {
-    override fun matches(n: Int) = n % divisor == 0
-    override fun process(n: Int) = message
-}
-
-class FizzRule : DivisibleRule(3, "Fizz");
-class BuzzRule : DivisibleRule(5, "Buzz");
-class FizzBuzzRule : DivisibleRule(15, "FizzBuzz");
-
-open class FizzBuzzValue private constructor (val id: Int) {
-    class Message(id: Int, val message: String) : FizzBuzzValue(id)
-    class Number(id: Int) : FizzBuzzValue(id)
-}
-
-class FizzBuzzChain {
-    private var rules :MutableList<Rule> = mutableListOf()
-
-    public constructor(rules: MutableList<Rule> = mutableListOf()) {
-        this.rules = rules;
+@Component
+class FizzBuzzService
+{
+    fun getFizzValues(): List<FizzBuzzValue> {
+        return FizzBuzzChain(FizzRule()).getValues(100)
     }
 
-    fun addRule(rule: Rule): Unit {
-        rules.add(rule)
+    fun getBuzzValues(): List<FizzBuzzValue> {
+        return FizzBuzzChain(BuzzRule()).getValues(100)
     }
 
-    fun process(n: Int) = when(val rule = rules.firstOrNull { it.matches(n) }) {
-        is Rule -> FizzBuzzValue.Message(n, rule.process(n))
-        else -> FizzBuzzValue.Number(n)
+    fun getFizzBuzzValues(): List<FizzBuzzValue> {
+        return FizzBuzzChain(FizzBuzzRule(), FizzRule(), BuzzRule()).getValues(100);
+    }
+
+    fun getFizzBuzzValue(value: Int): FizzBuzzValue {
+        return FizzBuzzChain(FizzBuzzRule(), FizzRule(), BuzzRule()).process(value)
     }
 }
